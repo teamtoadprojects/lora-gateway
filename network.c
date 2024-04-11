@@ -18,7 +18,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <wiringPi.h>           // Include WiringPi library!
+#include <lgpio.h>
 #include "network.h"
 #include "global.h"
 
@@ -95,23 +95,23 @@ NetworkLoop( void *some_void_ptr )
     {
         if ( HaveAnIPAddress(  ) )
         {
-            digitalWrite( Config.NetworkLED, 1 );
+            lgGpioWrite(Config.GPIO_HANDLE, Config.NetworkLED, 1);
 //          LogMessage("On network :-)\n");
 
             if ( CanSeeTheInternet(  ) )
             {
-                digitalWrite( Config.InternetLED, 1 );
+                lgGpioWrite(Config.GPIO_HANDLE, Config.InternetLED, 1);
 //              LogMessage("On the internet :-)\n");
             }
             else
             {
-                digitalWrite( Config.InternetLED, 0 );
+                lgGpioWrite(Config.GPIO_HANDLE, Config.InternetLED, 0);
 //              LogMessage("Not on internet :-(\n");
             }
         }
         else
         {
-            digitalWrite( Config.NetworkLED, 0 );
+            lgGpioWrite(Config.GPIO_HANDLE, Config.NetworkLED, 0);
 //          LogMessage("No network :-(\n");
         }
 

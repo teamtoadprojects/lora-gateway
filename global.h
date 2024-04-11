@@ -13,12 +13,12 @@ struct TPayload
 	int InUse;
 	int SendToClients;
 	int Channel;
-	
+
 	time_t LastPacketAt;
-	
+
 	char Telemetry[256];
 	char Payload[32];
-	
+
 	char Time[12];
 	unsigned int Counter, LastCounter;
 	double Longitude, Latitude;
@@ -29,26 +29,26 @@ struct TPayload
 	int PacketSNR, PacketRSSI;
 	double Frequency;
 };
- 
-struct TLoRaDevice 
+
+struct TLoRaDevice
 {
 	int    Enabled;
-	
+
 	double Frequency;
     double PPM;
 	double FrequencyOffset;
-    
+
 	double Bandwidth;
 	double CurrentBandwidth;
-		
-	int InUse;    
+
+	int InUse;
 	int DIO0;
 	int DIO5;
-	
+
 	int AFC;					// Enable Automatic Frequency Control
 	double MaxAFCStep;			// Maximum adjustment, in kHz, per packet
 	int AFCTimeout;				// Revert to original frequency if no packets for this period (in seconds)
-	
+
 	int SpeedMode;
 	int Power;
 	int PayloadLength;
@@ -76,7 +76,7 @@ struct TLoRaDevice
 	int IdleUplink;
 	int SSDVUplink;
 	char UplinkMessage[256];
-	
+
 	// Telnet uplink
 	char Telemetry[256];
 	unsigned char PacketID;
@@ -90,8 +90,8 @@ struct TLoRaDevice
 	char HABUplink[256];
 	int HABUplinkCount;
 	int GotHABReply;
-	int GotReply;	
-    
+	int GotReply;
+
     // Chat uplink
     int ChatMode;
     char ChatPayloadID[32];
@@ -99,22 +99,25 @@ struct TLoRaDevice
     char TxChatMessage[200];
     int RxMessageID;
     char RxChatMessage[200];
-	
+
 	// Local data packets
 	int LocalDataCount;
 	char LocalDataBuffer[255];
-	
+
 	// Status
 	int CurrentRSSI;
 	int PacketSNR, PacketRSSI;
 	double FrequencyError;
+
+	// SPI comms
+	int SPIHandle;
 };
- 
-struct TConfig 
- {   
+
+struct TConfig
+ {
 	char Tracker[16];				// Callsign or name of receiver
 	double latitude, longitude, altitude;		// Receiver's location
-     
+
 	int EnableSSDV;
 	int EnableSondehub;
 	int EnableTelemetryLogging;
@@ -152,6 +155,7 @@ struct TConfig
 	char MQTTUser[16];
 	char MQTTPass[32];
 	char MQTTTopic[128];
+	int GPIO_HANDLE;
 };
 
 typedef struct {
@@ -251,7 +255,7 @@ struct TServerInfo
 extern struct TConfig Config;
 extern int SSDVSendArrayIndex;
 extern pthread_mutex_t ssdv_mutex;
- 
+
 void LogMessage( const char *format, ... );
 
 #endif /* _H_Global */

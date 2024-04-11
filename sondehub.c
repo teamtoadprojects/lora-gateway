@@ -18,7 +18,6 @@
 #include <math.h>
 #include <pthread.h>
 #include <curl/curl.h>
-#include <wiringPi.h>
 
 #include "global.h"
 #include "gateway.h"
@@ -44,9 +43,9 @@ void SetSondehubSentence(int Channel, char *tmp)
 		IncomingSondehubPayloads[Channel].PacketSNR = Config.LoRaDevices[Channel].PacketSNR;
 		IncomingSondehubPayloads[Channel].PacketRSSI = Config.LoRaDevices[Channel].PacketRSSI;
 		IncomingSondehubPayloads[Channel].Frequency = Config.LoRaDevices[Channel].Frequency + Config.LoRaDevices[Channel].FrequencyOffset;
-	
+
 		strcpy(IncomingSondehubPayloads[Channel].Telemetry, tmp);
-	
+
 		IncomingSondehubPayloads[Channel].InUse = (IncomingSondehubPayloads[Channel].Latitude != 0) && (IncomingSondehubPayloads[Channel].Longitude != 0);
 	}
 
@@ -116,7 +115,7 @@ int UploadJSONToServer(char *url, char *json)
 				}
                 else if ((http_resp >= 201) && (http_resp <= 209))
 				{
-					//Data submitted, but with some issues. Refer to response for details.	
+					//Data submitted, but with some issues. Refer to response for details.
 					LogMessage("20x response to %s\n", json);
 					LogError(http_resp, "JSON: ", json);
 					LogError(http_resp, "RESP: ", curl_error);
@@ -152,7 +151,7 @@ int UploadJSONToServer(char *url, char *json)
 
 				LogError(res, "JSON: ", json);
 				LogError(res, "RESP: ", curl_error);
-				
+
                 // Likely a network error, so return false to requeue
                 result = false;
 			}
@@ -169,7 +168,7 @@ int UploadJSONToServer(char *url, char *json)
         /* CURL error, return false so we requeue */
         return false;
     }
-	
+
 }
 
 void ExtractFields(char *Telemetry, char *ExtractedFields)
@@ -179,7 +178,7 @@ void ExtractFields(char *Telemetry, char *ExtractedFields)
 
 	ExtractedFields[0] = '\0';
 	FieldList[0] = '\0';
-	
+
 	strcpy(Line, Telemetry);
 	token = strtok(Line, ",*");
 	while ((token != NULL) && (FieldList[0] == '\0'))
@@ -189,23 +188,23 @@ void ExtractFields(char *Telemetry, char *ExtractedFields)
 			strcpy(FieldList, token);
 		}
 		token = strtok(NULL, ",*");
-	}	
-	
+	}
+
 	if (FieldList[0])
 	{
 		// We have a field list field, so go through that and extract each field, adding fields to the JSON for Sondehub
 		int i;
 		char Value[64];
-		
+
 		strcpy(Line, Telemetry);
 		token = strtok(Line, ",*");
 		for (i=1; FieldList[i]; i++)
 		{
 			token = strtok(NULL, ",*");
 			Value[0] = '\0';
-			
+
 			// LogMessage("Field %d type %c is '%s'\n", i, FieldList[i], token);
-			
+
 			switch (FieldList[i])
 			{
 				case '6':
@@ -233,7 +232,7 @@ void ExtractFields(char *Telemetry, char *ExtractedFields)
 					}
 				break;
 
-				case 'A':	
+				case 'A':
 				sprintf(Value, "\"temp\":%s,", token);
 				break;
 
@@ -241,39 +240,39 @@ void ExtractFields(char *Telemetry, char *ExtractedFields)
 				sprintf(Value, "\"ext_temperature\":%s,", token);
 				break;
 
-				case 'C':	
+				case 'C':
 				sprintf(Value, "\"pred_lat\":%s,", token);
 				break;
 
-				case 'D':	
+				case 'D':
 				sprintf(Value, "\"pred_lon\":%s,", token);
 				break;
 
-				case 'R':	
+				case 'R':
 				sprintf(Value, "\"pressure\":%s,", token);
 				break;
 			}
-			
+
 			if (*Value)
 			{
 				strcat(ExtractedFields, Value);
 			}
-		}	
+		}
 	}
-	
+
 	// LogMessage("Extracted: '%s'\n", ExtractedFields);
 }
 
 void BuildPayloadTime(char *Result, char *TimeInSentence, struct tm *tm)
 {
 	struct tm tm2;
-	
+
 	memcpy(&tm2, tm, sizeof(tm2));
-	
+
     strptime(TimeInSentence, "%H:%M:%S", &tm2);
-	
+
 	// Test for payload time being yesterday
-	
+
 	if ((tm2.tm_hour == 23) && (tm->tm_hour == 00))
 	{
 		tm2.tm_mday--;
@@ -295,7 +294,7 @@ int UploadSondehubPosition(int Channel)
 	strftime(now, sizeof(now), "%Y-%0m-%0dT%H:%M:%SZ", tm);
 
 	BuildPayloadTime(payload_time, ActiveSondehubPayloads[Channel].Time, tm);
-	
+
 	// Find field list and extract fields
 	ExtractFields(ActiveSondehubPayloads[Channel].Telemetry, ExtractedFields);
 
@@ -313,7 +312,7 @@ int UploadSondehubPosition(int Channel)
 	{
 		uploader_position[0] = '\0';
 	}
-	
+
 	// Create json as required by sondehub-amateur
 	sprintf(json,	"[{\"software_name\": \"LoRa Gateway\","		// Fixed software name
 					"\"software_version\": \"%s\","					// Version
@@ -335,7 +334,7 @@ int UploadSondehubPosition(int Channel)
 					"}]",
 					Config.Version, Config.Tracker, now,
 					ActiveSondehubPayloads[Channel].Payload, payload_time,
-					ActiveSondehubPayloads[Channel].Latitude, ActiveSondehubPayloads[Channel].Longitude, ActiveSondehubPayloads[Channel].Altitude,				
+					ActiveSondehubPayloads[Channel].Latitude, ActiveSondehubPayloads[Channel].Longitude, ActiveSondehubPayloads[Channel].Altitude,
 					ActiveSondehubPayloads[Channel].Frequency,
 					Config.LoRaDevices[Channel].SpeedMode,
 					ActiveSondehubPayloads[Channel].PacketSNR, ActiveSondehubPayloads[Channel].PacketRSSI,
@@ -351,16 +350,16 @@ char *SanitiseCallsignForMQTT(char *Callsign)
 {
 	static char Result[32];
 	char *ptr;
-	
+
 	strcpy(Result, Callsign);
-	
+
     ptr = strchr(Result, '/');
-	
+
     while (ptr)
 	{
         *ptr = '-';
         ptr = strchr(ptr, '/');
-    }	
+    }
 
 	return Result;
 }
@@ -395,18 +394,18 @@ int UploadListenerToSondehub(void)
 			Config.Version, SanitiseCallsignForMQTT(Config.Tracker),
 			Config.latitude, Config.longitude, Config.altitude,
 			Config.radio, Config.antenna);
-			
+
 	return UploadJSONToServer("https://api.v2.sondehub.org/amateur/listeners", json);
 }
 
-	
+
 void *SondehubLoop( void *vars )
 {
 	while (1)
 	{
 		static long ListenerCountdown = 0;
 		int Channel;
-		
+
 		// Copy from incoming to active
 		pthread_mutex_lock(&crit); // lock the critical section
 		for (Channel=0; Channel<=1; Channel++)
@@ -416,7 +415,7 @@ void *SondehubLoop( void *vars )
 			{
 				// copy from incoming to active
 				memcpy(&ActiveSondehubPayloads[Channel], &IncomingSondehubPayloads[Channel], sizeof(struct TPayload));
-				
+
 				IncomingSondehubPayloads[Channel].InUse = 0;
 			}
 		}
@@ -429,15 +428,15 @@ void *SondehubLoop( void *vars )
 			if (ActiveSondehubPayloads[Channel].InUse)
 			{
 				ChannelPrintf(Channel, 6, 1, "SH");
-				
+
 				UploadSondehubPosition(Channel);		// Upload, with limited retries if needed
-				
+
 				ActiveSondehubPayloads[Channel].InUse = 0;
 
 				ChannelPrintf(Channel, 6, 1, "  ");
 			}
 		}
-		
+
 		// Listener position uploads
 		if ((Config.latitude >= -90) && (Config.latitude <= 90) && (Config.longitude >= -180) && (Config.longitude <= 180))
 		{
@@ -455,7 +454,7 @@ void *SondehubLoop( void *vars )
 				}
 			}
 		}
-		
+
         usleep(100000);
 	}
 }

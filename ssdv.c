@@ -14,7 +14,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <curl/curl.h>
-#include <wiringPi.h>
+#include <lgpio.h>
 
 #include "urlencode.h"
 #include "base64.h"
@@ -180,16 +180,16 @@ void *SSDVLoop( void *vars )
             if ( j == 50 || ( ( packets == 0 ) && ( j > 0 ) ) )
             {
 				ChannelPrintf(s[0].Channel, 6, 16, "SSDV");
-				
+
                 UploadImagePacket( s, j );
-				
+
 				ChannelPrintf(s[0].Channel, 6, 16, "    ");
 
                 j = 0;
 
                 packets = 0;
             }
-			delay(100);			// Don't eat too much CPU
+            lguSleep(0.1);  // Don't use too much CPU
         }
     }
 
