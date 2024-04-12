@@ -35,8 +35,7 @@ Enable SPI in raspi-config
 Dependencies
 ============
 
-	sudo apt-get install git libcurl4-openssl-dev libncurses5-dev  libssl-dev
-
+	sudo apt install git libcurl4-openssl-dev libncurses5-dev libssl-dev liblgpio-dev libpaho-mqtt-dev libpaho-mqtt1.3
 
 
 SSDV
@@ -48,34 +47,6 @@ Raspberry Pi OS no longer includes SSDV, so you must install SSDV from source as
 	cd ~
 	git clone https://github.com/fsphil/ssdv.git
 	cd ssdv
-	make
-	sudo make install
-
-
-
-
-WiringPi
-========
-
-Raspberry Pi OS no longer includes WiringPi, so you must install Wiring Pi from source as follows:
-	
-	cd ~
-	git clone https://github.com/WiringPi/WiringPi.git
-	cd WiringPi
-	./build
-
-
-
-MQTT
-=======
-
-MQTT support was added recently, and needs the following library installed::
-
-	cd ~ 
-	mkdir MQTTClients
-	cd MQTTClients
-	git clone https://github.com/janderholm/paho.mqtt.c.git
-	cd paho.mqtt.c
 	make
 	sudo make install
 
@@ -295,6 +266,10 @@ Many thanks to David Brooke for coding this feature and the AFC.
 
 Change History
 ==============
+
+## 12/04/2024 - V1.11.0
+    Port to kernel lgpio interface instead of wiringPi
+	Use apt provided mqtt libraries
 
 ## 08/10/2023 - V1.10.6
 	Use callsign for MQTT client ID
